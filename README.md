@@ -37,6 +37,141 @@ A modern, production-grade **Mini ERP + CRM Operations Portal** built for wholes
 
 ---
 
+## 📐 System Architecture & ER Diagrams
+
+### 1. System Architecture & Data Flow
+
+```mermaid
+graph TD
+    subgraph Client["Frontend Layer (React 18 + Vite)"]
+        UI["Glassmorphic UI / Admin Dashboard"]
+        RoleSwitcher["Quick Role Switcher (Admin / Sales / Warehouse / Accounts)"]
+        Axios["Axios API Client (Bearer Token Interceptor)"]
+        UI --> Axios
+        RoleSwitcher --> Axios
+    end
+
+    subgraph NginxProxy["Reverse Proxy / Web Server"]
+        Nginx["Nginx Container (Port 80)"]
+    end
+
+    subgraph BackendAPI["Backend Layer (Express + TypeScript)"]
+        Express["Express App (Port 5000)"]
+        AuthMiddleware["JWT Authentication & RBAC Middleware"]
+        ZodValidator["Zod Schema Validator"]
+        
+        subgraph Controllers["API Controllers"]
+            AuthController["Auth Controller"]
+            CustomerController["Customer Controller"]
+            ProductController["Product Controller"]
+            StockController["Stock Controller"]
+            ChallanController["Challan Controller"]
+        end
+
+        PDFService["PDFKit Generator (Streamed Invoices)"]
+
+        Express --> AuthMiddleware
+        AuthMiddleware --> ZodValidator
+        ZodValidator --> Controllers
+        ChallanController --> PDFService
+    end
+
+    subgraph DatabaseLayer["Database & ORM Layer"]
+        Prisma["Prisma ORM (5.10)"]
+        TransactionGuard["Prisma $transaction Guard (Atomic Stock Deduction)"]
+        DB[(SQLite / PostgreSQL Database)]
+        
+        Controllers --> Prisma
+        Prisma --> TransactionGuard
+        TransactionGuard --> DB
+    end
+
+    Axios -->|HTTP / API Requests| Nginx
+    Nginx -->|Proxy /api/*| Express
+```
+
+### 2. Database Entity Relationship Diagram (ERD)
+
+```mermaid
+erDiagram
+    USER ||--o{ STOCK_LOG : "operates"
+    USER ||--o{ CHALLAN : "creates"
+    CUSTOMER ||--o{ FOLLOW_UP_NOTE : "has notes"
+    CUSTOMER ||--o{ CHALLAN : "places order"
+    PRODUCT ||--o{ STOCK_LOG : "tracks audit movement"
+    PRODUCT ||--o{ CHALLAN_ITEM : "snapshotted in"
+    CHALLAN ||--o{ CHALLAN_ITEM : "contains items"
+
+    USER {
+        string id PK
+        string name
+        string email
+        string password
+        string role "ADMIN | SALES | WAREHOUSE | ACCOUNTS"
+    }
+
+    CUSTOMER {
+        string id PK
+        string companyName
+        string contactPerson
+        string email
+        string phone
+        string gstin
+        string customerType "WHOLESALE | RETAIL | DISTRIBUTOR"
+        string status "LEAD | ACTIVE | INACTIVE"
+    }
+
+    FOLLOW_UP_NOTE {
+        string id PK
+        string customerId FK
+        string note
+        datetime followUpDate
+    }
+
+    PRODUCT {
+        string id PK
+        string sku
+        string name
+        float unitPrice
+        int currentStock
+        int minStockAlert
+        string location
+    }
+
+    STOCK_LOG {
+        string id PK
+        string productId FK
+        int quantityChanged
+        string movementType "IN | OUT"
+        string reason
+        string userId FK
+        datetime createdAt
+    }
+
+    CHALLAN {
+        string id PK
+        string challanNumber
+        string customerId FK
+        string status "DRAFT | CONFIRMED | CANCELLED"
+        float totalAmount
+        string createdById FK
+        datetime createdAt
+    }
+
+    CHALLAN_ITEM {
+        string id PK
+        string challanId FK
+        string productId FK
+        string productNameSnapshot
+        string skuSnapshot
+        float unitPriceSnapshot
+        int quantity
+        float totalPrice
+    }
+```
+
+---
+
 ## 🏗️ 1. How the Server Was Set Up
 
 The backend server is architected as a modular, RESTful API web service built with Node.js, Express, and TypeScript.
