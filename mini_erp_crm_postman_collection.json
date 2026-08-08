@@ -1,0 +1,284 @@
+{
+	"info": {
+		"_postman_id": "c1f2e3d4-a5b6-7890-1234-56789abcdef0",
+		"name": "Mini ERP + CRM Operations Portal API",
+		"description": "Postman Collection for testing all backend REST endpoints including Auth, Customer CRM, Product Inventory, Stock Movement Logs, Sales Challans, and PDF Invoice Generation.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Login (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@minierp.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Register New Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Custom User\",\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"ADMIN\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Get Current Profile (/me)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "me"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Customer CRM Module",
+			"item": [
+				{
+					"name": "Get All Customers (Search & Filter)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/customers?page=1&limit=10&search=Apex&status=ACTIVE",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers"],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "10" },
+								{ "key": "search", "value": "Apex" },
+								{ "key": "status", "value": "ACTIVE" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Customer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Nexus Global Electronics\",\n  \"mobile\": \"+91 98989 12345\",\n  \"email\": \"procurement@nexusglobal.com\",\n  \"businessName\": \"Nexus Corp\",\n  \"gstNumber\": \"27NEXUS1234F1Z0\",\n  \"customerType\": \"DISTRIBUTOR\",\n  \"address\": \"Suite 404, Innovation Park, Pune, MH\",\n  \"status\": \"ACTIVE\",\n  \"notes\": \"Large enterprise buyer interested in monitors\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers"]
+						}
+					}
+				},
+				{
+					"name": "Add Follow-Up Note",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"note\": \"Discussed credit limit extension up to ₹500,000.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/customers/:id/notes",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "customers", ":id", "notes"],
+							"variable": [{ "key": "id", "value": "CUSTOMER_UUID" }]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Products & Stock Module",
+			"item": [
+				{
+					"name": "Get Products (Low Stock Filter)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/products?page=1&limit=10&lowStock=true",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products"],
+							"query": [
+								{ "key": "lowStock", "value": "true" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"4K HD Webcam with Mic\",\n  \"sku\": \"ACC-CAM-005\",\n  \"category\": \"Accessories\",\n  \"unitPrice\": 3500,\n  \"currentStock\": 50,\n  \"minStockAlert\": 10,\n  \"location\": \"Rack C-04\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "products"]
+						}
+					}
+				},
+				{
+					"name": "Adjust Stock Level (IN / OUT)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": \"PRODUCT_UUID\",\n  \"quantityChanged\": 15,\n  \"movementType\": \"IN\",\n  \"reason\": \"Supplier restock batch received\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/stock/adjust",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "stock", "adjust"]
+						}
+					}
+				},
+				{
+					"name": "Get Stock Audit Movement Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/stock/logs?page=1&limit=15",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "stock", "logs"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Sales Challans",
+			"item": [
+				{
+					"name": "Create Sales Challan (Confirmed / Draft)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerId\": \"CUSTOMER_UUID\",\n  \"status\": \"CONFIRMED\",\n  \"items\": [\n    {\n      \"productId\": \"PRODUCT_UUID\",\n      \"quantity\": 2\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/challans",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "challans"]
+						}
+					}
+				},
+				{
+					"name": "Update Challan Status (Draft -> Confirmed)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"CONFIRMED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/challans/:id/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "challans", ":id", "status"],
+							"variable": [{ "key": "id", "value": "CHALLAN_UUID" }]
+						}
+					}
+				},
+				{
+					"name": "Download Sales Challan PDF Document",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/challans/:id/pdf",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "challans", ":id", "pdf"],
+							"variable": [{ "key": "id", "value": "CHALLAN_UUID" }]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000"
+		},
+		{
+			"key": "jwtToken",
+			"value": "YOUR_JWT_TOKEN_HERE"
+		}
+	]
+}
